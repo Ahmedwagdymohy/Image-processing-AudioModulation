@@ -1,0 +1,248 @@
+    % Task a: Record voice segments
+    close all
+
+
+    % Set the sampling frequency and bit depth
+    fs = 44100; % Choose a suitable sampling frequency (e.g., 44.1 kHz)
+    bitDepth = 16; % Choose a suitable bit depth (e.g., 16 bits)
+    
+    % % Record the first voice segment
+    % recObj = audiorecorder(fs, bitDepth, 1); % 1 channel for mono recording
+    % disp('Start speaking for the first segment.');`
+    % recordblocking(recObj, 10); % Record for 10 seconds
+    % input1 = getaudiodata(recObj);
+    % audiowrite('input1.wav', input1, fs); % Save the audio as 'input1.wav'
+    
+    % % Record the second voice segment
+    % disp('Start speaking for the second segment.');
+    % recordblocking(recObj, 10); % Record for 10 seconds
+    % input2 = getaudiodata(recObj);
+    % audiowrite('input2.wav', input2, fs); % Save the audio as 'input2.wav'
+    
+    
+    
+    
+    
+    
+    
+    
+    % ================================================================
+    input1 = audioread("input1.wav");
+    input2 = audioread("input2.wav");
+    % Task b: Design and apply LPF filter
+    
+    % Use filterDesigner to design the LPF filter
+    %%filterDesigner;
+    
+    % Once you have the filter design, export it as an object (e.g., 'lpFilter')
+    % and then apply it to each input signal
+    cutoffFreq = 5000; % Adjust the cutoff frequency based on testing
+    lpFilter = filter1; % Use the filter object created in filterDesigner
+    
+    % Apply the LPF to the signals
+    filteredInput1 = filter(lpFilter, input1);
+    filteredInput2 = filter(lpFilter, input2);
+    
+    % Plot the frequency response of the filter
+    freqz(lpFilter);
+    
+    
+    
+    % =============================================================
+    
+    
+    
+    % Task c: Plot magnitude spectrum before and after filtering
+    
+    % Compute the FFT of the original and filtered signals
+    fftInput1 = fftshift(fft(input1));
+    fftInput2 = fftshift(fft(input2));
+    fftFiltered1 = fftshift(fft(filteredInput1));
+    fftFiltered2 = fftshift(fft(filteredInput2));
+    
+    % Create frequency vectors
+    freq = linspace(-fs/2, fs/2, length(fftInput1));
+    
+    % Plot magnitude spectrum
+    % Assuming you have already computed the FFTs for the input and filtered signals
+
+% Create frequency vectors
+freq = linspace(-fs/2, fs/2, length(fftInput1));
+
+% Plot the magnitude spectrum of each signal separately
+figure;
+
+% Input 1
+subplot(2, 2, 1);
+plot(freq, abs(fftInput1), 'b');
+title('Magnitude Spectrum of Input 1');
+xlabel('Frequency (Hz)');
+ylabel('Magnitude');
+legend('Input 1');
+
+% Input 2
+subplot(2, 2, 2);
+plot(freq, abs(fftInput2), 'r');
+title('Magnitude Spectrum of Input 2');
+xlabel('Frequency (Hz)');
+ylabel('Magnitude');
+legend('Input 2');
+
+% Filtered Input 1
+subplot(2, 2, 3);
+plot(freq, abs(fftFiltered1), 'b');
+title('Magnitude Spectrum of Filtered Input 1');
+xlabel('Frequency (Hz)');
+ylabel('Magnitude');
+legend('Filtered Input 1');
+
+% Filtered Input 2
+subplot(2, 2, 4);
+plot(freq, abs(fftFiltered2), 'r');
+title('Magnitude Spectrum of Filtered Input 2');
+xlabel('Frequency (Hz)');
+ylabel('Magnitude');
+legend('Filtered Input 2');
+
+    
+    
+    
+    
+    
+    
+%=======================================================================
+
+% Find the minimum length of the two signals
+minLength = min(length(input1), length(input2));
+
+% Adjust the length of each signal to be the minimum length
+input1 = input1(1:minLength);
+input2 = input2(1:minLength);
+
+L1 = length(input1);  
+L2 = length(input2);  
+
+input1 = interp(input1, 20);
+input2 = interp(input2, 20);
+
+TS1 = 1/fs;                            
+N1 = [0:(length(input1)-1)];
+L1 = length(input1);                        
+f1 = [-L1/2:L1/2-1]*(fs/L1);           
+
+TS2 = 1/fs;                            
+N2 = [0:(length(input2)-1)];
+L2 = length(input2);                        
+f2 = [-L2/2:L2/2-1]*(fs/L2);           
+
+Fc1 = 100000;
+carrier1 = cos(2*pi*Fc1*TS1*N1);
+x1_modulated = input1'.*0.5.*carrier1;
+
+
+Fc2 = 20000;
+carrier2 = cos(2*pi*Fc2*TS2*N2);
+x2_modulated = input2'.*0.5.*carrier2;
+
+
+
+figure();
+subplot(3,1,1);
+plot(f1,abs(fftshift(fft(x1_modulated))));
+title('X1 Modulated')
+subplot(3,1,2);
+plot(f2,abs(fftshift(fft(x2_modulated))));
+title('X2 Modulated')
+
+
+
+
+
+
+% Combined signal
+signal = x1_modulated + x2_modulated;
+
+
+
+
+% Frequency domain plot for the combined signal
+L = length(signal);
+f_combined = [-L/2:L/2-1]*(fs/L);
+
+
+
+figure();
+subplot(3, 1, 3);
+plot(f_combined, abs(fftshift(fft(signal))));
+title('Combined Signal (Frequency Domain)');
+xlabel('Frequency (Hz)');
+ylabel('Magnitude');
+
+%========================================================================
+%===================modulated=============================================
+
+% % Assuming you have the 'signal' variable representing the transmitted signal
+% 
+% % Assuming you have the 'signal' variable representing the transmitted signal
+% 
+% % Demodulate signals
+ demodulated1 = signal .* cos(2 * pi * Fc1 * TS1 * N1);
+ demodulated2 = signal .* cos(2 * pi * Fc2 * TS2 * N2);
+% 
+
+% Plot magnitude spectrum of demodulated signals
+L_demod1 = length(demodulated1);
+L_demod2 = length(demodulated2);
+f_demod1 = [-L_demod1/2:L_demod1/2-1] * (fs/L_demod1);
+f_demod2 = [-L_demod2/2:L_demod2/2-1] * (fs/L_demod2);
+
+figure();
+subplot(2, 1, 1);
+plot(f_demod1, abs(fftshift(fft(demodulated1))));
+title('Demodulated Signal 1 (Frequency Domain)');
+xlabel('Frequency (Hz)');
+ylabel('Magnitude');
+
+subplot(2, 1, 2);
+plot(f_demod2, abs(fftshift(fft(demodulated2))));
+title('Demodulated Signal 2 (Frequency Domain)');
+xlabel('Frequency (Hz)');
+ylabel('Magnitude');
+
+
+
+
+% % Design low-pass filter using filterDesigner
+% 
+% 
+% 
+% %naming the filter of the filter desgin 
+% lpFilter1 = filter1;
+% lpFilter2 = filter1;
+% 
+% % Apply the low-pass filter to demodulated signals
+demodulated1 = filter(filter1, demodulated1);
+demodulated2 = filter(filter1, demodulated2);
+% 
+% Save demodulated signals as audio files
+audiowrite('output11.wav', demodulated1, fs);
+audiowrite('output22.wav', demodulated2, fs);
+
+% Plot magnitude spectrum of demodulated signals
+
+figure();
+subplot(2, 1, 1);
+plot(f_demod1, abs(fftshift(fft(demodulated1))));
+title('Demodulated Signal 1 (Frequency Domain)');
+xlabel('Frequency (Hz)');
+ylabel('Magnitude');
+
+subplot(2, 1, 2);
+plot(f_demod2, abs(fftshift(fft(demodulated2))));
+title('Demodulated Signal 2 (Frequency Domain)');
+xlabel('Frequency (Hz)');
+ylabel('Magnitude');
+
+
+
+
