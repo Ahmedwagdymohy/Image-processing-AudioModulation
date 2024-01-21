@@ -1,4 +1,4 @@
-    % Task a: Record voice segments
+    % Task a: Record voice segments to use it in the project
     close all
 
 
